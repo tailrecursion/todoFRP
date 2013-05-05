@@ -10,24 +10,37 @@
   <![endif]-->
 </head>
 <body>
-  <include type="text/hlisp" src="../include/index.cljs"></include>
+  <script type="text/hlisp">
+    (ns todo.index
+      (:require-macros
+        [hlisp.macros                 :refer [tpl]]
+        [hlisp.reactive.macros        :refer [reactive-attributes]]
+        [tailrecursion.javelin.macros :refer [cell mirror]])
+      (:require
+        [hlisp.util             :as u :refer [pluralize]]
+        [hlisp.reactive         :as r]
+        [tailrecursion.javelin  :as j]
+        [todo.state             :as s]))
+    (mirror todo.state)
+    (def editing-new (cell "")) 
+  </script>
   <reactive-attributes>
     <div>
       <section id="todoapp">
         <header id="header">
           <h1>todos</h1>
-          <form do='(d/on! :submit #(do (add-item! @editing-new)
+          <form do='(r/on! :submit #(do (add-item! @editing-new)
                                         (reset! editing-new "")))'>
             <input id="new-todo" placeholder="What needs to be done?" autofocus
-                   do='(d/value! editing-new)
-                       (d/on! :keypress #(reset! editing-new (d/value! (.-target %)))
+                   do='(r/value! editing-new)
+                       (r/on! :keypress #(reset! editing-new (r/value! (.-target %)))
                               :focusout #(reset! editing-new ""))'>
           </form>
         </header>
-        <section id="main" do="(d/class! :hidden (and (empty? active) (empty? completed)))">
+        <section id="main" do="(r/class! :hidden (and (empty? active) (empty? completed)))">
           <input id="toggle-all" type="checkbox"
-                 do="(d/attr! :checked (empty? active))
-                     (d/on! :click #(set-all-completed! (d/value! (.-target %))))">
+                 do="(r/attr! :checked (empty? active))
+                     (r/on! :click #(set-all-completed! (r/value! (.-target %))))">
           <label for="toggle-all">Mark all as complete</label>
           <loop-todos>
             <tpl>
@@ -38,21 +51,21 @@
                 <text/>
                 <is-visible/>
               </arglist>
-              <li do="(d/class! :completed is-completed
+              <li do="(r/class! :completed is-completed
                                 :hidden    (not is-visible)
                                 :editing   is-editing)">
-                <div class="view" do="(d/on! :dblclick #(set-editing! idx true))">
+                <div class="view" do="(r/on! :dblclick #(set-editing! idx true))">
                   <input class="toggle" type="checkbox"
-                         do="(d/attr! :checked is-completed)
-                             (d/on! :click #(set-completed! idx (d/value! (.-target %))))">
-                  <label do="(d/text! text)"/>
-                  <button class="destroy" do='(d/on! :click #(remove-item! idx))'/>
+                         do="(r/attr! :checked is-completed)
+                             (r/on! :click #(set-completed! idx (r/value! (.-target %))))">
+                  <label do="(r/text! text)"/>
+                  <button class="destroy" do='(r/on! :click #(remove-item! idx))'/>
                 </div>
-                <form do="(d/on! :submit #(set-editing! idx false))">
+                <form do="(r/on! :submit #(set-editing! idx false))">
                   <input class="edit"
-                         do="(d/attr! :value text)
-                             (d/focus! is-editing)
-                             (d/on! :focusout #(do (set-text! idx (d/value! (.-target %)))
+                         do="(r/attr! :value text)
+                             (r/focus! is-editing)
+                             (r/on! :focusout #(do (set-text! idx (r/value! (.-target %)))
                                                    (set-editing! idx false)))">
                 </form>
               </li>
@@ -60,27 +73,27 @@
             <ul id="todo-list"/>
           </loop-todos>
         </section>
-        <footer id="footer" do="(d/class! :hidden (and (empty? active) (empty? completed)))">
+        <footer id="footer" do="(r/class! :hidden (and (empty? active) (empty? completed)))">
           <!-- This should be `0 items left` by default -->
           <span id="todo-count">
-            <strong do='(d/text! (str (count active) " "))'></strong>
-            <span do='(d/text! (str (pluralize "item" (count active)) " "))'></span>
+            <strong do='(r/text! (str (count active) " "))'></strong>
+            <span do='(r/text! (str (pluralize "item" (count active)) " "))'></span>
             <span>left</span>
           </span>
           <!-- Remove this if you don't implement routing -->
           <ul id="filters">
             <li>
-              <a do='(d/class! :selected (= "#/" route))' href="#/">All</a>
+              <a do='(r/class! :selected (= "#/" route))' href="#/">All</a>
             </li>
             <li>
-              <a do='(d/class! :selected (= "#/active" route))' href="#/active">Active</a>
+              <a do='(r/class! :selected (= "#/active" route))' href="#/active">Active</a>
             </li>
             <li>
-              <a do='(d/class! :selected (= "#/completed" route))' href="#/completed">Completed</a>
+              <a do='(r/class! :selected (= "#/completed" route))' href="#/completed">Completed</a>
             </li>
           </ul>
-          <button id="clear-completed" do="(d/on! :click #(clear-completed!))">
-            Clear completed (<span do="(d/text! (count completed))"/>)
+          <button id="clear-completed" do="(r/on! :click #(clear-completed!))">
+            Clear completed (<span do="(r/text! (count completed))"/>)
           </button>
         </footer>
       </section>

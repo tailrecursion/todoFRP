@@ -1,12 +1,9 @@
-(ns todo
+(ns todo.state
   (:require-macros
-    [hlisp.macros                 :refer [tpl]]
-    [hlisp.reactive.macros        :refer [reactive-attributes]]
     [tailrecursion.javelin.macros :refer [cell]])
   (:require
     [clojure.string         :as s :refer [blank?]]
-    [hlisp.reactive         :as d :refer [thing-looper]]
-    [hlisp.util                   :refer [pluralize]]
+    [hlisp.reactive         :as r :refer [thing-looper]]
     [tailrecursion.javelin        :refer [route*]]
     [alandipert.storage-atom      :refer [local-storage]]))
 
@@ -14,7 +11,7 @@
 
 (declare route completed?)
 
-(defn- reactive-info [todos i]
+(defn reactive-info [todos i]
   (let [todo (cell (get-in todos [i]))]
     [(cell (:editing todo))
      (cell (:completed todo))
@@ -28,7 +25,6 @@
 (def completed?   #(:completed %))
 (def state        (local-storage (cell '[]) ::store))
 (def route        (route* 50 "#/")) 
-(def editing-new  (cell "")) 
 (def completed    (cell (filter completed? state))) 
 (def active       (cell (remove completed? state)))
 (def loop-todos   (thing-looper state reactive-info)) 
